@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'backend_file.dart'; 
 
 void main() {
   runApp(const ImpossibleGame());
@@ -12,24 +13,28 @@ class ImpossibleGame extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: GameScreen(),
+      home: const GameScreen(),
     );
   }
 }
 
 class GameScreen extends StatefulWidget {
+  const GameScreen({Key? key}) : super(key: key);
+
   @override
   _GameScreenState createState() => _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
-  double circleY = 0; 
-  double velocity = 0; 
-  double gravity = 0.0015; // gravity applied on the ball while falling
-  double jumpForce = -0.025; // how much force it goes up when clicked on ball 
+  double circleY = 0;
+  double velocity = 0;
+  final double gravity = 0.0015; 
+  final double jumpForce = -0.025; 
   int score = 0;
-  bool isGameOver = false; 
+  bool isGameOver = false;
   late Timer gameLoop;
+
+  final BackendService backendService = BackendService('http://your-server-url'); // Replace with your server URL
 
   @override
   void initState() {
@@ -54,12 +59,26 @@ class _GameScreenState extends State<GameScreen> {
           circleY += velocity;
 
           if (circleY > 1) {
-            isGameOver = true;
-            gameLoop.cancel();
+            handleGameOver();
           }
         }
       });
     });
+  }
+
+  void handleGameOver() {
+    isGameOver = true;
+    saveHighScore; 
+    gameLoop.cancel();
+  }
+
+  Future<void> saveHighScore( int score) async {
+    try {
+      await backendService.saveHighScore;
+      print("High score saved successfully!");
+    } catch (error) {
+      print("Failed to save high score: $error");
+    }
   }
 
   void jump() {
@@ -79,7 +98,7 @@ class _GameScreenState extends State<GameScreen> {
         onTap: jump,
         child: Stack(
           children: [
-          
+            // Ball
             Align(
               alignment: Alignment(0, circleY),
               child: Container(
@@ -91,7 +110,7 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
             ),
-            
+            // Score
             Positioned(
               top: 50,
               left: 20,
@@ -100,7 +119,7 @@ class _GameScreenState extends State<GameScreen> {
                 style: const TextStyle(fontSize: 30, color: Colors.white),
               ),
             ),
-            
+            // Game Over Screen
             if (isGameOver)
               Center(
                 child: Column(
