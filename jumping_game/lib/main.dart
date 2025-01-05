@@ -35,7 +35,7 @@ class _GameScreenState extends State<GameScreen> {
   int highScore = 0;
   late Timer gameLoop;
 
-  final BackendService backendService = BackendService('http://your-server-url'); // Replace with your server URL
+  final BackendService backendService = BackendService('http://localhost:57053');
 
   @override
   void initState() {
@@ -59,20 +59,25 @@ class _GameScreenState extends State<GameScreen> {
           velocity += gravity;
           circleY += velocity;
 
-          if (circleY > 1) {
-            handleGameOver();
-          }
+          // Check if the game is over
+          checkGameOver();
         }
       });
     });
   }
 
+  void checkGameOver() {
+    if (circleY > 1) { // Circle goes out of bounds
+      handleGameOver();
+    }
+  }
+
   void handleGameOver() async {
     isGameOver = true;
-    await saveHighScore(score);
-    highScore = await backendService.getHighScore(); // Fetch updated high score
+    gameLoop.cancel(); // Stop the game loop
+    await saveHighScore(score); // Save the current score
+    highScore = await backendService.getHighScore(); // Fetch the updated high score
     setState(() {});
-    gameLoop.cancel();
   }
 
   Future<void> saveHighScore(int score) async {
