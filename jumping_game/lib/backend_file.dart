@@ -6,7 +6,6 @@ class BackendService {
 
   BackendService(this.baseUrl);
 
-  // Save high score
   Future<void> saveHighScore(int score) async {
     try {
       final response = await http.post(
@@ -23,7 +22,6 @@ class BackendService {
     }
   }
 
-  // Fetch high score
   Future<int> getHighScore() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/store_highscore.php'));

@@ -12,7 +12,6 @@ if ($conn->connect_error) {
     die(json_encode(["status" => "error", "message" => "Connection failed: " . $conn->connect_error]));
 }
 
-// Fetch the highest score from the high_scores table
 $sql = "SELECT MAX(score) AS highScore FROM display_score";
 $result = $conn->query($sql);
 
