@@ -6,16 +6,12 @@ class BackendService {
 
   BackendService(this.baseUrl);
 
- 
-  Future<void> saveHighScore(String playerName, int score) async {
+  Future<void> saveHighScore(int score) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/save_highscore'),
+        Uri.parse('$baseUrl/store_highscore.php'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'playerName': playerName,
-          'score': score,
-        }),
+        body: jsonEncode({'score': score}),
       );
 
       if (response.statusCode != 200) {
@@ -23,6 +19,22 @@ class BackendService {
       }
     } catch (error) {
       print('Error saving high score: $error');
+    }
+  }
+
+  Future<int> getHighScore() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/get_highscore.php'));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['highScore'] ?? 0;
+      } else {
+        throw Exception('Failed to fetch high score: ${response.body}');
+      }
+    } catch (error) {
+      print('Error fetching high score: $error');
+      return 0;
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'backend_file.dart'; 
+import 'backend_file.dart';
 
 void main() {
   runApp(const ImpossibleGame());
@@ -28,10 +28,11 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   double circleY = 0;
   double velocity = 0;
-  final double gravity = 0.0015; 
-  final double jumpForce = -0.025; 
+  final double gravity = 0.0015;
+  final double jumpForce = -0.025;
   int score = 0;
   bool isGameOver = false;
+  int highScore = 0;
   late Timer gameLoop;
 
   final BackendService backendService = BackendService('http://your-server-url'); // Replace with your server URL
@@ -66,16 +67,17 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  void handleGameOver() {
+  void handleGameOver() async {
     isGameOver = true;
-    saveHighScore; 
+    await saveHighScore(score);
+    highScore = await backendService.getHighScore(); // Fetch updated high score
+    setState(() {});
     gameLoop.cancel();
   }
 
-  Future<void> saveHighScore( int score) async {
+  Future<void> saveHighScore(int score) async {
     try {
-      await backendService.saveHighScore;
-      print("High score saved successfully!");
+      await backendService.saveHighScore(score);
     } catch (error) {
       print("Failed to save high score: $error");
     }
@@ -98,7 +100,6 @@ class _GameScreenState extends State<GameScreen> {
         onTap: jump,
         child: Stack(
           children: [
-            // Ball
             Align(
               alignment: Alignment(0, circleY),
               child: Container(
@@ -110,7 +111,6 @@ class _GameScreenState extends State<GameScreen> {
                 ),
               ),
             ),
-            // Score
             Positioned(
               top: 50,
               left: 20,
@@ -119,7 +119,6 @@ class _GameScreenState extends State<GameScreen> {
                 style: const TextStyle(fontSize: 30, color: Colors.white),
               ),
             ),
-            // Game Over Screen
             if (isGameOver)
               Center(
                 child: Column(
@@ -134,7 +133,14 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ),
                     Text(
-                      "Your Last Score: $score",
+                      "Your Score: $score",
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      "High Score: $highScore",
                       style: const TextStyle(
                         fontSize: 24,
                         color: Colors.white,
